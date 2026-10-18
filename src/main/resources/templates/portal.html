@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="auth-page">
+    <section class="auth-panel">
+        <div class="auth-brand">
+            <span class="brand-mark">HR</span>
+            <span>HR Management</span>
+        </div>
+        <h1>Welcome</h1>
+        <p class="muted">You are signed in as <strong th:text="${currentRole}">ROLE</strong>.</p>
+        <div class="grid">
+            <a class="btn btn-primary" th:href="@{/leave-requests}">View Leave Requests</a>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-secondary" type="submit">Sign Out</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

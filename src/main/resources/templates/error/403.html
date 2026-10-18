@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<main class="auth-panel">
+    <div class="auth-brand">
+        <span class="brand-mark">HR</span>
+        <span>HR Management</span>
+    </div>
+
+    <h1>Access Denied</h1>
+    <p class="muted">Your account is not allowed to perform this action.</p>
+
+    <div class="grid">
+        <a class="btn btn-primary" th:href="@{/}">Back to Dashboard</a>
+        <form class="logout-form" th:action="@{/logout}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-secondary" type="submit">Sign Out</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

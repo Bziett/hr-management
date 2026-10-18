@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Intern Details</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('interns')}"></aside>
+    <main class="main">
+        <header class="topbar"><div class="page-title"><h1 th:text="${intern.fullName}">Intern</h1><span class="muted" th:text="${intern.internCode}">INT001</span></div><div class="actions"><a class="btn btn-secondary" th:href="@{/interns}">List</a><a class="btn btn-primary" th:if="${currentRole == 'ADMIN' or currentRole == 'HR' or currentRole == 'MANAGER'}" th:href="@{/interns/edit/{id}(id=${intern.id})}">Edit</a></div></header>
+        <section class="card detail-list">
+            <div class="detail-item"><span class="detail-label">Intern Code</span><span class="detail-value" th:text="${intern.internCode}">INT001</span></div>
+            <div class="detail-item"><span class="detail-label">Full Name</span><span class="detail-value" th:text="${intern.fullName}">Taylor Reed</span></div>
+            <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" th:text="${intern.email}">b@example.com</span></div>
+            <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value" th:text="${intern.phone}">0900000000</span></div>
+            <div class="detail-item"><span class="detail-label">University</span><span class="detail-value" th:text="${intern.university}">University</span></div>
+            <div class="detail-item"><span class="detail-label">Major</span><span class="detail-value" th:text="${intern.major}">Software</span></div>
+            <div class="detail-item"><span class="detail-label">Department</span><span class="detail-value" th:text="${intern.department}">Engineering</span></div>
+            <div class="detail-item"><span class="detail-label">Mentor</span><span class="detail-value" th:text="${intern.mentor}">Mentor</span></div>
+            <div class="detail-item"><span class="detail-label">Start Date</span><span class="detail-value" th:text="${intern.startDate}">2026-08-12</span></div>
+            <div class="detail-item"><span class="detail-label">End Date</span><span class="detail-value" th:text="${intern.endDate}">2026-10-12</span></div>
+            <div class="detail-item"><span class="detail-label">Status</span><span class="badge" th:text="${intern.status}">ACTIVE</span></div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+

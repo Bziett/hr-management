@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>Admin Dashboard</h1>
+                <span class="muted">Administer accounts and oversee the full HR system.</span>
+            </div>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-secondary" type="submit">Sign Out</button>
+            </form>
+        </header>
+
+        <section class="grid stats-grid dashboard-stats">
+            <article class="card metric-card">
+                <div class="stat-label">Accounts</div>
+                <div class="stat-value" th:text="${accountCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Employees & Managers</div>
+                <div class="stat-value" th:text="${employeeCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Interns</div>
+                <div class="stat-value" th:text="${internCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Attendance</div>
+                <div class="stat-value" th:text="${attendanceCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Pending Requests</div>
+                <div class="stat-value" th:text="${pendingLeaveCount}">0</div>
+            </article>
+        </section>
+
+        <section class="grid action-grid">
+            <a class="card action-card" th:href="@{/admin/accounts}">
+                <span class="action-title">Create HR Accounts</span>
+                <span class="muted">Create accounts for the HR team.</span>
+            </a>
+            <a class="card action-card" th:href="@{/employees}">
+                <span class="action-title">Manage Employees</span>
+                <span class="muted">View, add, and update staff profiles.</span>
+            </a>
+            <a class="card action-card" th:href="@{/leave-requests}">
+                <span class="action-title">Review Leave Requests</span>
+                <span class="muted">Monitor leave requests across the company.</span>
+            </a>
+        </section>
+
+        <section class="grid content-grid">
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Recent Employees</h2>
+                    <a class="btn btn-ghost" th:href="@{/employees/add}">Add</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Code</th><th>Full Name</th><th>Department</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${employees}" th:if="${stat.index < 5}">
+                            <td th:text="${employee.employeeCode}">NV001</td>
+                            <td th:text="${employee.fullName}">Alex Morgan</td>
+                            <td th:text="${employee.department}">Engineering</td>
+                            <td><span class="badge" th:text="${employee.status}">ACTIVE</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(employees)}"><td colspan="4" class="empty-state">No employees found</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Recent Leave Requests</h2>
+                    <a class="btn btn-ghost" th:href="@{/leave-requests}">Process</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Staff</th><th>Leave Type</th><th>Start Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="leaveRequest, stat : ${leaveRequests}" th:if="${stat.index < 5}">
+                            <td th:text="${leaveRequest.employeeName}">Alex Morgan</td>
+                            <td th:text="${leaveRequest.leaveType}">ANNUAL</td>
+                            <td th:text="${leaveRequest.startDate}">2026-09-03</td>
+                            <td><span class="badge" th:text="${leaveRequest.status}">PENDING</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(leaveRequests)}"><td colspan="4" class="empty-state">No leave requests found</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

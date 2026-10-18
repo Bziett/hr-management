@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('employees')}"></aside>
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title"><h1>Employee List</h1><span class="muted">Manage official employee profiles</span></div>
+            <a class="btn btn-primary" th:if="${currentRole == 'ADMIN' or currentRole == 'HR'}" th:href="@{/employees/add}">Add Employee</a>
+        </header>
+        <section class="card">
+            <div class="toolbar">
+                <input class="search-input" data-table-search="#employeesTable" placeholder="Search by code, name, email, department">
+                <form class="actions filter-form" th:if="${currentRole == 'ADMIN' or currentRole == 'HR'}" th:action="@{/employees}" method="get">
+                    <select class="form-select" name="department">
+                        <option value="">All Departments</option>
+                        <option th:each="department : ${departments}" th:value="${department}" th:text="${department}" th:selected="${department == selectedDepartment}">Engineering</option>
+                    </select>
+                    <button class="btn btn-secondary" type="submit">Filter</button>
+                </form>
+            </div>
+            <div class="table-wrap">
+                <table id="employeesTable">
+                    <thead><tr><th>Employee Code</th><th>Full Name</th><th>Email</th><th>Role</th><th>Department</th><th>Position</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="employee : ${employees}">
+                        <td th:text="${employee.employeeCode}">NV001</td>
+                        <td th:text="${employee.fullName}">Alex Morgan</td>
+                        <td th:text="${employee.email}">a@example.com</td>
+                        <td><span class="badge" th:text="${employee.role != null ? employee.role : 'EMPLOYEE'}">EMPLOYEE</span></td>
+                        <td th:text="${employee.department}">Engineering</td>
+                        <td th:text="${employee.position}">Developer</td>
+                        <td><span class="badge" th:text="${employee.status}">ACTIVE</span></td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn btn-ghost" th:href="@{/employees/{id}(id=${employee.id})}">View</a>
+                                <a class="btn btn-secondary" th:if="${currentRole == 'ADMIN' or (currentRole == 'HR' and employee.role != 'HR')}" th:href="@{/employees/edit/{id}(id=${employee.id})}">Edit</a>
+                                <form class="inline-form" th:if="${currentRole == 'ADMIN' or (currentRole == 'HR' and employee.role != 'HR')}" th:action="@{/employees/delete/{id}(id=${employee.id})}" method="post" onsubmit="return confirm('Delete this employee?')">
+                                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(employees)}"><td colspan="8" class="empty-state">No employees found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
+

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Attendance Details</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('attendance')}"></aside>
+    <main class="main">
+        <header class="topbar"><div class="page-title"><h1 th:text="${attendance.employeeName}">Employee</h1><span class="muted" th:text="${attendance.date}">2026-08-12</span></div><div class="actions"><a class="btn btn-secondary" th:href="@{/attendance}">List</a><a class="btn btn-primary" th:if="${canManageAttendance}" th:href="@{/attendance/edit/{id}(id=${attendance.id})}">Edit</a></div></header>
+        <section class="card detail-list">
+            <div class="detail-item"><span class="detail-label">Employee ID</span><span class="detail-value" th:text="${attendance.employeeId}">NV001</span></div>
+            <div class="detail-item"><span class="detail-label">Employee Name</span><span class="detail-value" th:text="${attendance.employeeName}">Alex Morgan</span></div>
+            <div class="detail-item"><span class="detail-label">Department</span><span class="detail-value" th:text="${attendance.department}">Engineering</span></div>
+            <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value" th:text="${attendance.date}">2026-08-12</span></div>
+            <div class="detail-item"><span class="detail-label">Check In</span><span class="detail-value" th:text="${attendance.checkIn}">08:00</span></div>
+            <div class="detail-item"><span class="detail-label">Check Out</span><span class="detail-value" th:text="${attendance.checkOut}">17:30</span></div>
+            <div class="detail-item"><span class="detail-label">Status</span><span class="badge" th:text="${attendance.status}">PRESENT</span></div>
+            <div class="detail-item"><span class="detail-label">Submitted By</span><span class="detail-value" th:text="${attendance.submittedByRole}">EMPLOYEE</span></div>
+            <div class="detail-item"><span class="detail-label">Review Status</span><span class="detail-value" th:text="${attendance.reviewStatus}">SUBMITTED_TO_MANAGER</span></div>
+            <div class="detail-item"><span class="detail-label">Notes</span><span class="detail-value" th:text="${attendance.note}">On time</span></div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+

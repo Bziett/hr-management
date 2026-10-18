@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<main class="auth-panel">
+    <div class="auth-brand">
+        <span class="brand-mark">HR</span>
+        <span>HR Management</span>
+    </div>
+
+    <h1>Sign In</h1>
+    <p class="muted">Manage employees, interns, attendance, and leave requests.</p>
+
+    <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+    <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+
+    <form th:action="@{/login}" method="post" class="grid">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div class="form-field">
+            <label for="username">Username</label>
+            <input class="form-control" id="username" name="username" autocomplete="username" required>
+        </div>
+
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Sign In</button>
+        <a class="btn btn-secondary" th:href="@{/register}">Register as Intern</a>
+    </form>
+</main>
+</body>
+</html>

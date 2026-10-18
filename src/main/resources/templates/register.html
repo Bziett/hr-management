@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intern Registration - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<main class="auth-panel">
+    <div class="auth-brand">
+        <span class="brand-mark">HR</span>
+        <span>HR Management</span>
+    </div>
+
+    <h1>Intern Registration</h1>
+    <p class="muted">Only interns can self-register. Internal roles are created by Admin or HR.</p>
+
+    <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/register}" th:object="${user}" method="post" class="grid">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div class="form-field">
+            <label for="fullName">Full Name</label>
+            <input class="form-control" id="fullName" th:field="*{fullName}" required>
+        </div>
+
+        <div class="form-field">
+            <label for="email">Email</label>
+            <input class="form-control" id="email" type="email" th:field="*{email}" required>
+        </div>
+
+        <div class="form-field">
+            <label for="university">University</label>
+            <input class="form-control" id="university" th:field="*{university}" required>
+        </div>
+
+        <div class="form-field">
+            <label for="major">Major</label>
+            <input class="form-control" id="major" th:field="*{major}" required>
+        </div>
+
+        <div class="form-field">
+            <label for="department">Preferred Department</label>
+            <select class="form-select" id="department" th:field="*{department}" required>
+                <option value="">Select Department</option>
+                <option th:each="department : ${departments}" th:value="${department}" th:text="${department}">Engineering</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="username">Username</label>
+            <input class="form-control" id="username" th:field="*{username}" autocomplete="username" required>
+        </div>
+
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input class="form-control" id="password" type="password" th:field="*{password}" autocomplete="new-password" minlength="8" required>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Register as Intern</button>
+        <a class="btn btn-secondary" th:href="@{/login}">Back to Sign In</a>
+    </form>
+</main>
+</body>
+</html>

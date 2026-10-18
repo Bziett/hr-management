@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(activePage)">
+    <div class="brand">
+        <span class="brand-mark">HR</span>
+        <span th:text="${currentRole == 'ADMIN'} ? 'Admin Console' : (${currentRole == 'HR'} ? 'HR Portal' : 'People Portal')">HR Management</span>
+    </div>
+
+    <nav class="nav-list">
+        <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active'" th:if="${currentRole == 'ADMIN'}" th:href="@{/admin/dashboard}">Dashboard</a>
+        <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active'" th:if="${currentRole == 'HR'}" th:href="@{/hr/dashboard}">Dashboard</a>
+        <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active'" th:if="${currentRole == 'MANAGER'}" th:href="@{/manager/dashboard}">Dashboard</a>
+        <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active'" th:if="${currentRole == 'EMPLOYEE'}" th:href="@{/employee/dashboard}">Dashboard</a>
+        <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active'" th:if="${currentRole == 'INTERN'}" th:href="@{/intern/dashboard}">Dashboard</a>
+
+        <a class="nav-link" th:classappend="${activePage == 'accounts'} ? ' active'" th:if="${currentRole == 'ADMIN'}" th:href="@{/admin/accounts}">Create HR Accounts</a>
+
+        <a class="nav-link" th:classappend="${activePage == 'employees'} ? ' active'" th:if="${currentRole == 'ADMIN' or currentRole == 'HR' or currentRole == 'MANAGER'}" th:href="@{/employees}">Employees</a>
+        <a class="nav-link" th:classappend="${activePage == 'interns'} ? ' active'" th:if="${currentRole == 'ADMIN' or currentRole == 'HR' or currentRole == 'MANAGER'}" th:href="@{/interns}">Interns</a>
+        <a class="nav-link" th:classappend="${activePage == 'attendance'} ? ' active'" th:if="${currentRole == 'ADMIN' or currentRole == 'HR' or currentRole == 'MANAGER' or currentRole == 'EMPLOYEE' or currentRole == 'INTERN'}" th:href="@{/attendance}">Attendance</a>
+        <a class="nav-link" th:classappend="${activePage == 'leave'} ? ' active'" th:href="@{/leave-requests}">Leave</a>
+    </nav>
+</aside>
+</body>
+</html>

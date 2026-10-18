@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('employees')}"></aside>
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title"><h1 th:text="${employee.fullName}">Employee</h1><span class="muted" th:text="${employee.employeeCode}">NV001</span></div>
+            <div class="actions"><a class="btn btn-secondary" th:href="@{/employees}">List</a><a class="btn btn-primary" th:if="${currentRole == 'ADMIN' or (currentRole == 'HR' and employee.role != 'HR')}" th:href="@{/employees/edit/{id}(id=${employee.id})}">Edit</a></div>
+        </header>
+        <section class="card detail-list">
+            <div class="detail-item"><span class="detail-label">Employee Code</span><span class="detail-value" th:text="${employee.employeeCode}">NV001</span></div>
+            <div class="detail-item"><span class="detail-label">Full Name</span><span class="detail-value" th:text="${employee.fullName}">Alex Morgan</span></div>
+            <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" th:text="${employee.email}">a@example.com</span></div>
+            <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value" th:text="${employee.phone}">0900000000</span></div>
+            <div class="detail-item"><span class="detail-label">Role</span><span class="badge" th:text="${employee.role != null ? employee.role : 'EMPLOYEE'}">EMPLOYEE</span></div>
+            <div class="detail-item"><span class="detail-label">Department</span><span class="detail-value" th:text="${employee.department}">Engineering</span></div>
+            <div class="detail-item"><span class="detail-label">Position</span><span class="detail-value" th:text="${employee.position}">Developer</span></div>
+            <div class="detail-item"><span class="detail-label">Hire Date</span><span class="detail-value" th:text="${employee.hireDate}">2026-08-12</span></div>
+            <div class="detail-item"><span class="detail-label">Status</span><span class="badge" th:text="${employee.status}">ACTIVE</span></div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+

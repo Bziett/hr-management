@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Edit Intern</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('interns')}"></aside>
+    <main class="main">
+        <header class="topbar"><div class="page-title"><h1>Update Intern</h1><span class="muted" th:text="${intern.fullName}">Intern</span></div><a class="btn btn-secondary" th:href="@{/interns}">Back</a></header>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+        <form class="card form-grid" th:action="@{/interns/edit/{id}(id=${intern.id})}" th:object="${intern}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-field"><label>Intern Code</label><input class="form-control" th:field="*{internCode}" readonly></div>
+            <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
+            <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
+            <div class="form-field"><label>Phone</label><input class="form-control" th:field="*{phone}"></div>
+            <div class="form-field"><label>University</label><input class="form-control" th:field="*{university}" required></div>
+            <div class="form-field"><label>Major</label><input class="form-control" th:field="*{major}" required></div>
+            <div class="form-field">
+                <label>Department</label>
+                <input type="hidden" th:if="${currentRole == 'MANAGER'}" th:field="*{department}">
+                <select class="form-select" th:field="*{department}" th:disabled="${currentRole == 'MANAGER'}" required>
+                    <option value="">Select Department</option>
+                    <option th:each="department : ${departments}" th:value="${department}" th:text="${department}">Engineering</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label>Mentor</label>
+                <select class="form-select" th:field="*{mentor}">
+                    <option value="">Select Senior Mentor</option>
+                    <option th:if="${intern.mentor != null and intern.mentor != ''}" th:value="${intern.mentor}" th:text="${intern.mentor}">Current Mentor</option>
+                    <option th:each="mentor : ${mentorOptions}" th:value="${mentor.fullName}" th:text="${mentor.fullName}">Senior Mentor</option>
+                </select>
+            </div>
+            <div class="form-field"><label>Start Date</label><input class="form-control" type="date" th:field="*{startDate}"></div>
+            <div class="form-field"><label>End Date</label><input class="form-control" type="date" th:field="*{endDate}"></div>
+            <div class="form-field full"><label>Status</label><select class="form-select" th:field="*{status}"><option value="ACTIVE">Active Internship</option><option value="COMPLETED">Completed</option><option value="INACTIVE">Paused</option></select></div>
+            <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Update</button><a class="btn btn-secondary" th:href="@{/interns/{id}(id=${intern.id})}">Cancel</a></div>
+        </form>
+    </main>
+</div>
+</body>
+</html>
+

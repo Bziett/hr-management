@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Leave</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('leave')}"></aside>
+    <main class="main">
+        <header class="topbar"><div class="page-title"><h1>Leave Requests</h1><span class="muted">Review submitted leave requests and approval status</span></div><a class="btn btn-primary" th:if="${canCreateLeaveRequest}" th:href="@{/leave-requests/add}">Create Request</a></header>
+        <section class="card">
+            <div class="toolbar"><input class="search-input" data-table-search="#leaveTable" placeholder="Search by employee, leave type, status"></div>
+            <div class="table-wrap">
+                <table id="leaveTable">
+                    <thead><tr><th>Employee</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Approver</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="leaveRequest : ${leaveRequests}">
+                        <td th:text="${leaveRequest.employeeName}">Alex Morgan</td>
+                        <td th:text="${leaveRequest.leaveType}">Annual</td>
+                        <td th:text="${leaveRequest.startDate}">2026-08-12</td>
+                        <td th:text="${leaveRequest.endDate}">2026-08-13</td>
+                        <td th:text="${leaveRequest.approvedBy}">HR</td>
+                        <td><span class="badge" th:text="${leaveRequest.status}">PENDING</span></td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn btn-ghost" th:href="@{/leave-requests/{id}(id=${leaveRequest.id})}">View</a>
+                                <a class="btn btn-secondary" th:if="${#lists.contains(manageableLeaveRequestIds, leaveRequest.id)}" th:href="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}">Edit</a>
+                                <form class="inline-form" th:if="${#lists.contains(manageableLeaveRequestIds, leaveRequest.id)}" th:action="@{/leave-requests/delete/{id}(id=${leaveRequest.id})}" method="post" onsubmit="return confirm('Delete this leave request?')">
+                                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(leaveRequests)}"><td colspan="7" class="empty-state">No leave requests found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
+

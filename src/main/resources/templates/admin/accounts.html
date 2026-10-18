@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create HR Accounts</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('accounts')}"></aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>Create HR Accounts</h1>
+                <span class="muted">Admin can only create accounts for the HR team.</span>
+            </div>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-secondary" type="submit">Sign Out</button>
+            </form>
+        </header>
+
+        <div class="alert alert-success" th:if="${param.success}">HR account created successfully.</div>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <form class="card form-grid" th:action="@{/admin/accounts/hr}" th:object="${user}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-field full"><label>HR Code</label><input class="form-control" value="Auto-generated after saving" readonly></div>
+            <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
+            <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
+            <div class="form-field"><label>Username</label><input class="form-control" th:field="*{username}" required></div>
+            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="password" th:field="*{password}" minlength="8" required></div>
+            <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Create HR Account</button></div>
+        </form>
+
+        <section class="card" style="margin-top:16px">
+            <div class="toolbar"><h2>Account List</h2></div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Code</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Department</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="account : ${users}">
+                        <td th:text="${account.accountCode}">HR-00000000</td>
+                        <td th:text="${account.username}">username</td>
+                        <td th:text="${account.fullName}">Full name</td>
+                        <td th:text="${account.email}">email</td>
+                        <td><span class="badge" th:text="${account.role}">HR</span></td>
+                        <td th:text="${account.department}">HR</td>
+                        <td th:text="${account.status}">ACTIVE</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}"><td colspan="7" class="empty-state">No accounts found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+

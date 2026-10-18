@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>Manager Dashboard</h1>
+                <span class="muted">Managed Department: <strong th:text="${managedDepartment}">Engineering</strong></span>
+            </div>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-secondary" type="submit">Sign Out</button>
+            </form>
+        </header>
+
+        <div class="alert alert-success" th:if="${passwordChanged}" th:text="${passwordChanged}"></div>
+        <div class="alert alert-error" th:if="${passwordError}" th:text="${passwordError}"></div>
+
+        <section class="grid stats-grid dashboard-stats">
+            <article class="card metric-card">
+                <div class="stat-label">Department Employees & Managers</div>
+                <div class="stat-value" th:text="${employeeCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Interns</div>
+                <div class="stat-value" th:text="${internCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Attendance</div>
+                <div class="stat-value" th:text="${attendanceCount}">0</div>
+            </article>
+            <article class="card metric-card">
+                <div class="stat-label">Pending Requests</div>
+                <div class="stat-value" th:text="${pendingLeaveCount}">0</div>
+            </article>
+        </section>
+
+        <section class="grid action-grid">
+            <a class="card action-card" th:href="@{/employees}">
+                <span class="action-title">Department Employees</span>
+                <span class="muted">Track employee profiles in your department.</span>
+            </a>
+            <a class="card action-card" th:href="@{/interns}">
+                <span class="action-title">Interns</span>
+                <span class="muted">View interns and assigned mentors.</span>
+            </a>
+            <a class="card action-card" th:href="@{/attendance}">
+                <span class="action-title">Attendance</span>
+                <span class="muted">Review and update department attendance.</span>
+            </a>
+            <a class="card action-card" th:href="@{/attendance/add}">
+                <span class="action-title">Check In</span>
+                <span class="muted">Submit your arrival time to HR for today's attendance.</span>
+            </a>
+            <form class="card action-card" th:action="@{/attendance/check-out}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <span class="action-title">Check Out</span>
+                <span class="muted">Record your leaving time against today's check-in.</span>
+                <button class="btn btn-primary" type="submit">Check Out</button>
+            </form>
+            <form class="card action-card" th:action="@{/attendance/submit-department}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <span class="action-title">Submit Attendance Summary</span>
+                <span class="muted">Send your department attendance list to HR for review.</span>
+                <button class="btn btn-primary" type="submit">Submit Summary</button>
+            </form>
+            <a class="card action-card" th:href="@{/leave-requests}">
+                <span class="action-title">Leave</span>
+                <span class="muted">Process leave requests for your department.</span>
+            </a>
+        </section>
+
+        <section class="grid content-grid">
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Department Staff</h2>
+                    <a class="btn btn-ghost" th:href="@{/employees}">View Employees</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Full Name</th><th>Email</th><th>Position</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${employees}" th:if="${stat.index < 6}">
+                            <td th:text="${employee.fullName}">Alex Morgan</td>
+                            <td th:text="${employee.email}">a@example.com</td>
+                            <td th:text="${employee.position}">Developer</td>
+                            <td><span class="badge" th:text="${employee.status}">ACTIVE</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(employees)}"><td colspan="4" class="empty-state">No employees found in this department</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Department Leave</h2>
+                    <a class="btn btn-ghost" th:href="@{/leave-requests}">Process</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Staff</th><th>Leave Type</th><th>Start Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="leaveRequest, stat : ${leaveRequests}" th:if="${stat.index < 6}">
+                            <td th:text="${leaveRequest.employeeName}">Alex Morgan</td>
+                            <td th:text="${leaveRequest.leaveType}">ANNUAL</td>
+                            <td th:text="${leaveRequest.startDate}">2026-09-03</td>
+                            <td><span class="badge" th:text="${leaveRequest.status}">PENDING</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(leaveRequests)}"><td colspan="4" class="empty-state">No leave requests found in this department</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Department Interns</h2>
+                    <a class="btn btn-ghost" th:href="@{/interns}">View Interns</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Full Name</th><th>University</th><th>Mentor</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="intern, stat : ${interns}" th:if="${stat.index < 6}">
+                            <td th:text="${intern.fullName}">Taylor Reed</td>
+                            <td th:text="${intern.university}">University</td>
+                            <td th:text="${intern.mentor}">Mentor</td>
+                            <td><span class="badge" th:text="${intern.status}">ACTIVE</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(interns)}"><td colspan="4" class="empty-state">No interns found in this department</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Recent Attendance</h2>
+                    <div class="actions">
+                        <a class="btn btn-ghost" th:href="@{/attendance}">View Attendance</a>
+                        <a class="btn btn-primary" th:href="@{/attendance/add}">Check In</a>
+                        <form class="inline-form" th:action="@{/attendance/check-out}" method="post">
+                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button class="btn btn-secondary" type="submit">Check Out</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Staff</th><th>Date</th><th>Clock In</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="attendance, stat : ${attendances}" th:if="${stat.index < 6}">
+                            <td th:text="${attendance.employeeName}">Alex Morgan</td>
+                            <td th:text="${attendance.date}">2026-09-03</td>
+                            <td th:text="${attendance.checkIn}">08:00</td>
+                            <td><span class="badge" th:text="${attendance.status}">PRESENT</span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(attendances)}"><td colspan="4" class="empty-state">No attendance data found in this department</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="toolbar">
+                    <h2>Change Password</h2>
+                </div>
+                <form class="form-grid" th:action="@{/account/password}" method="post">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="form-field">
+                        <label>Current Password</label>
+                        <input class="form-control" type="password" name="currentPassword" autocomplete="current-password" required>
+                    </div>
+                    <div class="form-field">
+                        <label>New Password</label>
+                        <input class="form-control" type="password" name="newPassword" autocomplete="new-password" minlength="8" required>
+                    </div>
+                    <div class="form-field full page-actions">
+                        <button class="btn btn-primary" type="submit">Update Password</button>
+                    </div>
+                </form>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Leave Request</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('leave')}"></aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>Create Leave Request</h1>
+                <span class="muted">Submit your leave request for HR or Admin approval.</span>
+            </div>
+            <a class="btn btn-secondary" th:href="@{/leave-requests}">Back</a>
+        </header>
+
+        <form class="card form-grid" th:action="@{/leave-requests/add}" th:object="${leaveRequest}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{employeeId}">
+            <input type="hidden" th:field="*{employeeName}">
+
+            <div class="form-field full">
+                <label>Requester</label>
+                <input class="form-control" th:value="${leaveRequest.employeeName}" readonly>
+            </div>
+
+            <div class="form-field">
+                <label>Leave Type</label>
+                <select class="form-select" th:field="*{leaveType}">
+                    <option value="ANNUAL">Annual Leave</option>
+                    <option value="SICK">Sick Leave</option>
+                    <option value="UNPAID">Unpaid Leave</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label>Start Date</label>
+                <input class="form-control" type="date" th:field="*{startDate}" required>
+            </div>
+
+            <div class="form-field">
+                <label>End Date</label>
+                <input class="form-control" type="date" th:field="*{endDate}" required>
+            </div>
+
+            <div class="form-field full">
+                <label>Reason</label>
+                <textarea th:field="*{reason}" required></textarea>
+            </div>
+
+            <div class="form-field full page-actions">
+                <button class="btn btn-primary" type="submit">Submit Request</button>
+                <a class="btn btn-secondary" th:href="@{/leave-requests}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>
+

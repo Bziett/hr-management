@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Manager/Employee Accounts</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('accounts')}"></aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>Create Manager/Employee Accounts</h1>
+                <span class="muted">HR can only create Manager and Employee accounts. Admin and other HR accounts are hidden from this list.</span>
+            </div>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button class="btn btn-secondary" type="submit">Sign Out</button>
+            </form>
+        </header>
+
+        <div class="alert alert-success" th:if="${param.success}">Account created successfully.</div>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <form class="card form-grid" th:action="@{/hr/accounts/staff}" th:object="${user}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
+            <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
+            <div class="form-field"><label>Username</label><input class="form-control" th:field="*{username}" required></div>
+            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="password" th:field="*{password}" minlength="8" required></div>
+            <div class="form-field">
+                <label>Role</label>
+                <select class="form-select" th:field="*{role}" data-role-select required>
+                    <option value="">Select Role</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="EMPLOYEE">Employee</option>
+                </select>
+            </div>
+            <div class="form-field" data-position-field>
+                <label>Position</label>
+                <select class="form-select" th:field="*{position}">
+                    <option value="">Select Position</option>
+                    <option th:each="position : ${positions}" th:value="${position}" th:text="${position}">Senior</option>
+                </select>
+            </div>
+            <div class="form-field full">
+                <label>Managed / Assigned Department</label>
+                <select class="form-select" th:field="*{department}" required>
+                    <option value="">Select Department</option>
+                    <option th:each="department : ${departments}" th:value="${department}" th:text="${department}">Engineering</option>
+                </select>
+            </div>
+            <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Create Account</button></div>
+        </form>
+
+        <section class="card" style="margin-top:16px">
+            <div class="toolbar"><h2>Staff Account List</h2></div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Code</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Position</th><th>Department</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="account : ${users}">
+                        <td th:text="${account.accountCode}">EMP-00000000</td>
+                        <td th:text="${account.username}">username</td>
+                        <td th:text="${account.fullName}">Full name</td>
+                        <td th:text="${account.email}">email</td>
+                        <td><span class="badge" th:text="${account.role}">EMPLOYEE</span></td>
+                        <td th:text="${account.position}">Senior</td>
+                        <td th:text="${account.department}">Engineering</td>
+                        <td th:text="${account.status}">ACTIVE</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}"><td colspan="8" class="empty-state">No staff accounts found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
+

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Check In</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('attendance')}"></aside>
+    <main class="main">
+        <header class="topbar"><div class="page-title"><h1>Check In</h1><span class="muted">Submit your arrival time for today</span></div><a class="btn btn-secondary" th:href="@{/attendance}">Back</a></header>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+        <form class="card form-grid" th:action="@{/attendance/add}" th:object="${attendance}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{employeeId}">
+            <input type="hidden" th:field="*{employeeName}">
+            <input type="hidden" th:field="*{department}">
+            <div class="form-field"><label>Requester</label><input class="form-control" th:value="${attendance.employeeName}" readonly></div>
+            <div class="form-field"><label>Department</label><input class="form-control" th:value="${attendance.department}" readonly></div>
+            <div class="form-field"><label>Date</label><input class="form-control" type="date" th:field="*{date}" required></div>
+            <div class="form-field"><label>Check In</label><input class="form-control" type="time" th:field="*{checkIn}"></div>
+            <div class="form-field"><label>Status</label><select class="form-select" th:field="*{status}"><option value="PRESENT">Present</option><option value="LATE">Late</option><option value="ABSENT">Absent</option><option value="REMOTE">Remote</option></select></div>
+            <div class="form-field full"><label>Notes</label><textarea th:field="*{note}"></textarea></div>
+            <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Check In</button><a class="btn btn-secondary" th:href="@{/attendance}">Cancel</a></div>
+        </form>
+    </main>
+</div>
+</body>
+</html>
+

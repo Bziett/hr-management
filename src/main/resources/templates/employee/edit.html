@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Employee - HR Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('employees')}"></aside>
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title"><h1>Update Employee</h1><span class="muted" th:text="${employee.fullName}">Employee</span></div>
+            <a class="btn btn-secondary" th:href="@{/employees}">Back</a>
+        </header>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+        <form class="card form-grid" th:action="@{/employees/edit/{id}(id=${employee.id})}" th:object="${employee}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-field"><label>Employee Code</label><input class="form-control" th:field="*{employeeCode}" readonly></div>
+            <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
+            <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
+            <div class="form-field"><label>Phone</label><input class="form-control" th:field="*{phone}"></div>
+            <div class="form-field">
+                <label>Department</label>
+                <select class="form-select" th:field="*{department}" required>
+                    <option value="">Select Department</option>
+                    <option th:each="department : ${departments}" th:value="${department}" th:text="${department}">Engineering</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label>Role</label>
+                <select class="form-select" th:field="*{role}" data-role-select required>
+                    <option value="">Select Role</option>
+                    <option value="HR" th:if="${employee.role == 'HR'}">HR</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="EMPLOYEE">Employee</option>
+                </select>
+            </div>
+            <div class="form-field" data-position-field>
+                <label>Position</label>
+                <select class="form-select" th:field="*{position}">
+                    <option value="">Select Position</option>
+                    <option th:each="position : ${positions}" th:value="${position}" th:text="${position}">Senior</option>
+                </select>
+            </div>
+            <div class="form-field"><label>Hire Date</label><input class="form-control" type="date" th:field="*{hireDate}"></div>
+            <div class="form-field"><label>Status</label><select class="form-select" th:field="*{status}"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="RESIGNED">Resigned</option></select></div>
+            <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Update</button><a class="btn btn-secondary" th:href="@{/employees/{id}(id=${employee.id})}">Cancel</a></div>
+        </form>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
+
