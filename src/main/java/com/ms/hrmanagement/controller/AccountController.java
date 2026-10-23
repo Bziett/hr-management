@@ -39,6 +39,7 @@ public class AccountController {
             return "redirect:/admin/accounts?success";
 
         } catch (Exception e) {
+            user.setPassword("");
             model.addAttribute("error", e.getMessage());
             model.addAttribute("user", user);
             model.addAttribute("users", authService.getAdminHrManagerAccounts());

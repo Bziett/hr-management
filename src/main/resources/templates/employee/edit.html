@@ -39,8 +39,8 @@
             </div>
             <div class="form-field" data-position-field>
                 <label>Position</label>
-                <select class="form-select" th:field="*{position}">
-                    <option value="">Select Position</option>
+                <select class="form-select" th:field="*{position}" th:disabled="${employee.role != 'EMPLOYEE'}">
+                    <option value=""></option>
                     <option th:each="position : ${positions}" th:value="${position}" th:text="${position}">Senior</option>
                 </select>
             </div>

@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 public class AuthService implements UserDetailsService {
 
     private static final String DEFAULT_ADMIN_USERNAME = "admin";
-    private static final String DEFAULT_ADMIN_PASSWORD = "Admin@123";
+    private static final String DEFAULT_ADMIN_PASSWORD = "12345678";
     private static final String DEFAULT_DEPARTMENT = "Unassigned";
     private static final int MIN_PASSWORD_LENGTH = 8;
 
@@ -30,17 +30,20 @@ public class AuthService implements UserDetailsService {
     private final EmployeeRepository employeeRepository;
     private final InternRepository internRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StaffAccountService staffAccountService;
 
     public AuthService(
             UserRepository userRepository,
             EmployeeRepository employeeRepository,
             InternRepository internRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            StaffAccountService staffAccountService) {
 
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
         this.internRepository = internRepository;
         this.passwordEncoder = passwordEncoder;
+        this.staffAccountService = staffAccountService;
     }
 
     public User login(String username, String password)
@@ -113,10 +116,8 @@ public class AuthService implements UserDetailsService {
 
         ensureProfileEmailAvailable(user.getEmail());
 
-        String userId = createUser(user);
-        createEmployeeProfileIfMissing(user);
-
-        return userId;
+        user.setPosition("HR");
+        return createStaffAccount(user);
     }
 
     public String createManagerOrEmployeeAccount(User user)
@@ -134,14 +135,10 @@ public class AuthService implements UserDetailsService {
 
         user.setRole(role);
         user.setPosition(normalizeStaffPosition(role, user.getPosition()));
-        user.setStatus("ACTIVE");
+        user.setStatus(defaultText(user.getStatus(), "ACTIVE"));
 
         ensureProfileEmailAvailable(user.getEmail());
-
-        String userId = createUser(user);
-        createEmployeeProfileIfMissing(user);
-
-        return userId;
+        return createStaffAccount(user);
     }
 
     public String createAdminIfMissing()
@@ -339,6 +336,13 @@ public class AuthService implements UserDetailsService {
     private String createUser(User user)
             throws ExecutionException, InterruptedException {
 
+        prepareUser(user);
+        return userRepository.save(user);
+    }
+
+    private void prepareUser(User user)
+            throws ExecutionException, InterruptedException {
+
         validateUser(user);
 
         if (usernameExists(user.getUsername())) {
@@ -356,9 +360,7 @@ public class AuthService implements UserDetailsService {
         String role = normalizeRole(user.getRole());
         user.setRole(role);
 
-        if (!hasText(user.getAccountCode())) {
-            user.setAccountCode(generateCode(accountCodePrefix(role), null));
-        }
+        user.setAccountCode(generateCode(accountCodePrefix(role), null));
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -366,7 +368,16 @@ public class AuthService implements UserDetailsService {
             user.setStatus("ACTIVE");
         }
 
-        return userRepository.save(user);
+    }
+
+    private String createStaffAccount(User user)
+            throws ExecutionException, InterruptedException {
+
+        user.setPhone(defaultText(user.getPhone(), ""));
+        user.setHireDate(LocalDate.parse(defaultText(user.getHireDate(), LocalDate.now().toString())).toString());
+        prepareUser(user);
+        Employee employee = employeeProfile(user);
+        return staffAccountService.create(user, employee);
     }
 
     private void createEmployeeProfileIfMissing(User user)
@@ -376,8 +387,11 @@ public class AuthService implements UserDetailsService {
             return;
         }
 
-        String role = normalizeRole(user.getRole());
+        employeeRepository.save(employeeProfile(user));
+    }
 
+    private Employee employeeProfile(User user) {
+        String role = normalizeRole(user.getRole());
         Employee employee = new Employee();
         employee.setEmployeeCode(generateCode(employeeCodePrefix(role), user.getId()));
         employee.setFullName(user.getFullName());
@@ -385,10 +399,10 @@ public class AuthService implements UserDetailsService {
         employee.setDepartment(defaultText(user.getDepartment(), DEFAULT_DEPARTMENT));
         employee.setRole(role);
         employee.setPosition(normalizeStaffPosition(role, user.getPosition()));
-        employee.setHireDate(LocalDate.now().toString());
-        employee.setStatus("ACTIVE");
-
-        employeeRepository.save(employee);
+        employee.setPhone(defaultText(user.getPhone(), ""));
+        employee.setHireDate(defaultText(user.getHireDate(), LocalDate.now().toString()));
+        employee.setStatus(defaultText(user.getStatus(), "ACTIVE"));
+        return employee;
     }
 
     private void createInternProfileIfMissing(User user)
@@ -486,7 +500,7 @@ public class AuthService implements UserDetailsService {
     private String normalizeStaffPosition(String role, String position) {
 
         if ("MANAGER".equals(role)) {
-            return "Manager";
+            return "";
         }
 
         if ("HR".equals(role)) {

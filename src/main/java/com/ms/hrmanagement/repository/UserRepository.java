@@ -27,7 +27,7 @@ public class UserRepository {
 
         DocumentReference document = firestore
                 .collection(COLLECTION)
-                .document();
+                .document(RoleIds.newId(user.getRole()));
 
         user.setId(document.getId());
 

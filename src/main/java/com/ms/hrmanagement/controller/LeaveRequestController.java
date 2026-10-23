@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,7 @@ public class LeaveRequestController {
         model.addAttribute("leaveRequests", leaveRequests);
         model.addAttribute("selfService", isPersonalOnly(authentication));
         model.addAttribute("canCreateLeaveRequest", isLeaveCreator(authentication));
+        model.addAttribute("canReviewLeaveRequests", isReviewer(authentication));
         model.addAttribute("manageableLeaveRequestIds", getManageableLeaveRequestIds(leaveRequests, authentication));
 
         return "leave-request/list";
@@ -118,6 +120,7 @@ public class LeaveRequestController {
         model.addAttribute("leaveRequest", leaveRequest);
         model.addAttribute("selfService", isPersonalOnly(authentication));
         model.addAttribute("canManageLeaveRequest", canManageLeaveRequest(leaveRequest, authentication));
+        model.addAttribute("canReviewLeaveRequests", isReviewer(authentication));
 
         return "leave-request/detail";
     }
@@ -149,7 +152,8 @@ public class LeaveRequestController {
     public String updateLeaveRequest(
             @PathVariable String id,
             @ModelAttribute LeaveRequest leaveRequest,
-            Authentication authentication)
+            Authentication authentication,
+            RedirectAttributes redirectAttributes)
             throws ExecutionException, InterruptedException {
 
         LeaveRequest existingLeaveRequest = leaveRequestService.getLeaveRequestById(id);
@@ -157,9 +161,38 @@ public class LeaveRequestController {
 
         leaveRequest.setId(id);
 
-        leaveRequestService.updateLeaveRequest(leaveRequest);
+        try {
+            leaveRequestService.updateLeaveRequest(leaveRequest);
+            redirectAttributes.addFlashAttribute("successMessage", "Leave request updated");
+        } catch (IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
 
         return "redirect:/leave-requests";
+    }
+
+    @PostMapping("/review/{id}")
+    public String reviewLeaveRequest(
+            @PathVariable String id,
+            @RequestParam String decision,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes)
+            throws ExecutionException, InterruptedException {
+        if (!isReviewer(authentication)) {
+            throw new AccessDeniedException("Only Admin and HR can review leave requests");
+        }
+        try {
+            leaveRequestService.reviewLeaveRequest(id, decision, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "APPROVED".equals(decision) ? "Leave request approved" : "Leave request rejected");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/leave-requests";
+    }
+
+    private boolean isReviewer(Authentication authentication) {
+        return hasRole(authentication, "ROLE_ADMIN") || hasRole(authentication, "ROLE_HR");
     }
 
     // Delete leave request

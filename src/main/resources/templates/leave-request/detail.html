@@ -5,14 +5,19 @@
 <div class="app-shell">
     <aside th:replace="~{fragments/sidebar :: sidebar('leave')}"></aside>
     <main class="main">
-        <header class="topbar"><div class="page-title"><h1 th:text="${leaveRequest.employeeName}">Employee</h1><span class="muted" th:text="${leaveRequest.leaveType}">Annual</span></div><div class="actions"><a class="btn btn-secondary" th:href="@{/leave-requests}">List</a><a class="btn btn-primary" th:if="${canManageLeaveRequest}" th:href="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}">Edit</a></div></header>
+        <header class="topbar"><div class="page-title"><h1 th:text="${leaveRequest.employeeName}">Employee</h1><span class="muted" th:text="${leaveRequest.leaveType}">Annual</span></div><div class="actions"><a class="btn btn-secondary" th:href="@{/leave-requests}">List</a><a class="btn btn-primary" th:if="${canManageLeaveRequest and leaveRequest.status == 'PENDING'}" th:href="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}">Edit</a></div></header>
+        <form class="actions" th:if="${canReviewLeaveRequests and leaveRequest.status == 'PENDING'}" th:action="@{/leave-requests/review/{id}(id=${leaveRequest.id})}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-primary" type="submit" name="decision" value="APPROVED" onclick="return confirm('Approve this leave request?')">Approve</button>
+            <button class="btn btn-danger" type="submit" name="decision" value="REJECTED" onclick="return confirm('Reject this leave request?')">Reject</button>
+        </form>
         <section class="card detail-list">
             <div class="detail-item"><span class="detail-label">Employee ID</span><span class="detail-value" th:text="${leaveRequest.employeeId}">NV001</span></div>
             <div class="detail-item"><span class="detail-label">Employee Name</span><span class="detail-value" th:text="${leaveRequest.employeeName}">Alex Morgan</span></div>
             <div class="detail-item"><span class="detail-label">Leave Type</span><span class="detail-value" th:text="${leaveRequest.leaveType}">ANNUAL</span></div>
             <div class="detail-item"><span class="detail-label">Start Date</span><span class="detail-value" th:text="${leaveRequest.startDate}">2026-08-12</span></div>
             <div class="detail-item"><span class="detail-label">End Date</span><span class="detail-value" th:text="${leaveRequest.endDate}">2026-08-13</span></div>
-            <div class="detail-item"><span class="detail-label">Approver</span><span class="detail-value" th:text="${leaveRequest.approvedBy}">HR</span></div>
+            <div class="detail-item"><span class="detail-label">Reviewed By</span><span class="detail-value" th:text="${leaveRequest.approvedBy}">HR</span></div>
             <div class="detail-item"><span class="detail-label">Created Date</span><span class="detail-value" th:text="${leaveRequest.createdAt}">2026-08-12</span></div>
             <div class="detail-item"><span class="detail-label">Status</span><span class="badge" th:text="${leaveRequest.status}">PENDING</span></div>
             <div class="detail-item"><span class="detail-label">Reason</span><span class="detail-value" th:text="${leaveRequest.reason}">Reason</span></div>

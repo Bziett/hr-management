@@ -6,20 +6,44 @@
     <aside th:replace="~{fragments/sidebar :: sidebar('attendance')}"></aside>
     <main class="main">
         <header class="topbar"><div class="page-title"><h1 th:text="${attendance.employeeName}">Employee</h1><span class="muted" th:text="${attendance.date}">2026-08-12</span></div><div class="actions"><a class="btn btn-secondary" th:href="@{/attendance}">List</a><a class="btn btn-primary" th:if="${canManageAttendance}" th:href="@{/attendance/edit/{id}(id=${attendance.id})}">Edit</a></div></header>
+        <div class="alert alert-success" th:if="${attendanceSuccess}" th:text="${attendanceSuccess}"></div>
+        <div class="alert alert-error" th:if="${attendanceError}" th:text="${attendanceError}"></div>
+        <section class="attendance-evidence" th:if="${canUploadPhoto or attendance.photoSubmitted}">
+            <h2>Check-in Photo</h2>
+            <div class="attendance-photo-frame">
+                <img th:if="${attendance.photoSubmitted}" th:src="@{/attendance/{id}/photo(id=${attendance.id})}" alt="Check-in evidence" class="attendance-photo">
+                <img th:if="${canUploadPhoto}" id="attendancePhotoPreview" alt="Selected check-in photo" class="attendance-photo" hidden>
+                <span th:if="${canUploadPhoto}" id="attendancePhotoPlaceholder">Awaiting today's photo</span>
+            </div>
+            <form th:if="${canUploadPhoto}" class="attendance-photo-upload" th:action="@{/attendance/{id}/photo(id=${attendance.id})}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label for="attendancePhoto">Photo</label>
+                <input class="form-control" type="file" id="attendancePhoto" name="photo" accept="image/jpeg,image/png" capture="environment" required>
+                <button class="btn btn-primary" type="submit">Submit Photo</button>
+            </form>
+        </section>
         <section class="card detail-list">
             <div class="detail-item"><span class="detail-label">Employee ID</span><span class="detail-value" th:text="${attendance.employeeId}">NV001</span></div>
             <div class="detail-item"><span class="detail-label">Employee Name</span><span class="detail-value" th:text="${attendance.employeeName}">Alex Morgan</span></div>
             <div class="detail-item"><span class="detail-label">Department</span><span class="detail-value" th:text="${attendance.department}">Engineering</span></div>
             <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value" th:text="${attendance.date}">2026-08-12</span></div>
             <div class="detail-item"><span class="detail-label">Check In</span><span class="detail-value" th:text="${attendance.checkIn}">08:00</span></div>
-            <div class="detail-item"><span class="detail-label">Check Out</span><span class="detail-value" th:text="${attendance.checkOut}">17:30</span></div>
+            <div class="detail-item"><span class="detail-label">Check Out</span><span class="badge" th:if="${missingCheckOut == true}">Missing Check-out</span><span class="detail-value" th:unless="${missingCheckOut == true}" th:text="${attendance.checkOut}">17:30</span></div>
             <div class="detail-item"><span class="detail-label">Status</span><span class="badge" th:text="${attendance.status}">PRESENT</span></div>
             <div class="detail-item"><span class="detail-label">Submitted By</span><span class="detail-value" th:text="${attendance.submittedByRole}">EMPLOYEE</span></div>
             <div class="detail-item"><span class="detail-label">Review Status</span><span class="detail-value" th:text="${attendance.reviewStatus}">SUBMITTED_TO_MANAGER</span></div>
             <div class="detail-item"><span class="detail-label">Notes</span><span class="detail-value" th:text="${attendance.note}">On time</span></div>
+            <div class="detail-item"><span class="detail-label">Photo Submitted</span><span class="detail-value" th:text="${attendance.photoSubmittedAt}"></span></div>
+            <div class="detail-item"><span class="detail-label">Summary Submitted By</span><span class="detail-value" th:text="${attendance.summarySubmittedBy}"></span></div>
+            <div class="detail-item"><span class="detail-label">Summary Submitted At</span><span class="detail-value" th:text="${attendance.summarySubmittedAt}"></span></div>
+            <div class="detail-item" th:if="${attendance.manualEntry}"><span class="detail-label">Entry Source</span><span class="detail-value">Manual check-in</span></div>
+            <div class="detail-item" th:if="${attendance.correctedBy}"><span class="detail-label">Recorded / Corrected By</span><span class="detail-value" th:text="${attendance.correctedBy}"></span></div>
+            <div class="detail-item" th:if="${attendance.correctedAt}"><span class="detail-label">Recorded / Corrected At</span><span class="detail-value" th:text="${attendance.correctedAt}"></span></div>
+            <div class="detail-item" th:if="${attendance.correctionReason}"><span class="detail-label">Correction Reason</span><span class="detail-value" th:text="${attendance.correctionReason}"></span></div>
         </section>
     </main>
 </div>
+<script th:src="@{/js/attendance.js}"></script>
 </body>
 </html>
 

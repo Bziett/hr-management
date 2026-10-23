@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,9 +20,32 @@ import java.util.concurrent.ExecutionException;
 public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
+    private final Clock clock;
 
-    public AttendanceService(AttendanceRepository attendanceRepository) {
+    public AttendanceService(AttendanceRepository attendanceRepository, Clock attendanceClock) {
         this.attendanceRepository = attendanceRepository;
+        this.clock = attendanceClock;
+    }
+
+    public String today() { return LocalDate.now(clock).toString(); }
+    private String now() { return LocalDateTime.now(clock).toString(); }
+
+    public boolean isMissingCheckOut(Attendance attendance) {
+        if (attendance == null || !hasText(attendance.getCheckIn()) || hasText(attendance.getCheckOut())
+                || !hasText(attendance.getDate())) return false;
+        try {
+            return LocalDate.parse(attendance.getDate()).isBefore(LocalDate.now(clock));
+        } catch (java.time.DateTimeException exception) {
+            return false;
+        }
+    }
+
+    public boolean isVisibleToHr(Attendance attendance) {
+        return "SUBMITTED_TO_HR".equals(attendance.getReviewStatus()) || "REVIEWED".equals(attendance.getReviewStatus());
+    }
+
+    public List<Attendance> getAttendancesForHr() throws ExecutionException, InterruptedException {
+        return getAllAttendances().stream().filter(this::isVisibleToHr).toList();
     }
 
     // =========================
@@ -38,7 +63,7 @@ public class AttendanceService {
             attendance.setStatus("PRESENT");
         }
 
-        return attendanceRepository.save(attendance);
+        return attendanceRepository.createDaily(attendance);
     }
 
     public String createAttendanceForUser(
@@ -63,38 +88,35 @@ public class AttendanceService {
         }
 
         assignAttendanceOwner(attendance, user, employee, intern);
-
-        if (!hasText(attendance.getDate())) {
-            attendance.setDate(LocalDate.now().toString());
+        if (!hasText(attendance.getDepartment())) {
+            throw new IllegalArgumentException("A department must be assigned before checking in");
         }
+
+        LocalDateTime arrivedAt = LocalDateTime.now(clock);
+        attendance.setDate(arrivedAt.toLocalDate().toString());
 
         Attendance existingAttendance = findAttendanceForDate(user, employee, intern, attendance.getDate());
 
-        if (existingAttendance != null && hasText(existingAttendance.getCheckIn())) {
+        if (existingAttendance != null) {
             throw new IllegalArgumentException("You have already checked in for this date");
         }
 
-        if (!hasText(attendance.getCheckIn())) {
-            attendance.setCheckIn(LocalTime.now().withSecond(0).withNano(0).toString());
-        }
+        attendance.setCheckIn(arrivedAt.toLocalTime().withNano(0).toString());
+        attendance.setCheckOut(null);
+        attendance.setPhotoSubmitted(false);
+        attendance.setPhotoSubmittedAt(null);
+        attendance.setSummarySubmittedBy(null);
+        attendance.setSummarySubmittedAt(null);
+        attendance.setManualEntry(false);
+        attendance.setCorrectedBy(null);
+        attendance.setCorrectedAt(null);
+        attendance.setCorrectionReason(null);
 
         String role = normalizeRole(user.getRole());
         attendance.setSubmittedByRole(role);
-        attendance.setReviewStatus("SUBMITTED_TO_HR");
+        attendance.setReviewStatus("AWAITING_PHOTO");
 
-        if (!hasText(attendance.getStatus())) {
-            attendance.setStatus("PRESENT");
-        }
-
-        if (existingAttendance != null) {
-            existingAttendance.setCheckIn(attendance.getCheckIn());
-            existingAttendance.setStatus(attendance.getStatus());
-            existingAttendance.setSubmittedByRole(attendance.getSubmittedByRole());
-            existingAttendance.setReviewStatus(attendance.getReviewStatus());
-            existingAttendance.setNote(attendance.getNote());
-            updateAttendance(existingAttendance);
-            return existingAttendance.getId();
-        }
+        attendance.setStatus("PRESENT");
 
         return createAttendance(attendance);
     }
@@ -109,7 +131,8 @@ public class AttendanceService {
             throw new IllegalArgumentException("Unable to identify the current account");
         }
 
-        Attendance attendance = findAttendanceForDate(user, employee, intern, LocalDate.now().toString());
+        LocalDateTime leavingAt = LocalDateTime.now(clock);
+        Attendance attendance = findAttendanceForDate(user, employee, intern, leavingAt.toLocalDate().toString());
 
         if (attendance == null) {
             throw new IllegalArgumentException("Please check in before checking out");
@@ -123,14 +146,26 @@ public class AttendanceService {
             throw new IllegalArgumentException("You have already checked out today");
         }
 
-        attendance.setCheckOut(LocalTime.now().withSecond(0).withNano(0).toString());
-        attendance.setReviewStatus("SUBMITTED_TO_HR");
-
-        if (!hasText(attendance.getStatus())) {
-            attendance.setStatus("PRESENT");
-        }
-
-        updateAttendance(attendance);
+        String owner = attendance.getEmployeeId();
+        String date = leavingAt.toLocalDate().toString();
+        String time = leavingAt.toLocalTime().withNano(0).toString();
+        attendanceRepository.change(attendance.getId(), current -> {
+            if (!owner.equals(current.getEmployeeId()) || !date.equals(current.getDate())) {
+                throw new IllegalArgumentException("Attendance ownership has changed");
+            }
+            if (!hasText(current.getCheckIn()) || hasText(current.getCheckOut())) {
+                throw new IllegalArgumentException("Check-out is not available for this record");
+            }
+            if (!current.isPhotoSubmitted() && !current.isManualEntry()
+                    && ("AWAITING_PHOTO".equals(current.getReviewStatus()) || "SUBMITTED_TO_MANAGER".equals(current.getReviewStatus()))) {
+                throw new IllegalArgumentException("Submit today's check-in photo before checking out");
+            }
+            if (LocalTime.parse(time).isBefore(LocalTime.parse(current.getCheckIn()))) {
+                throw new IllegalArgumentException("Check-out must be after check-in");
+            }
+            current.setCheckOut(time);
+            // Preserve the Manager's submission when a later check-out arrives.
+        });
     }
 
     // =========================
@@ -172,8 +207,7 @@ public class AttendanceService {
         });
 
         return getAllAttendances().stream()
-                .filter(attendance -> matchesDepartment(attendance, departments)
-                        || matchesIdentity(attendance, ids, names))
+                .filter(attendance -> matchesDepartment(attendance, departments))
                 .toList();
     }
 
@@ -189,19 +223,76 @@ public class AttendanceService {
                 .toList();
     }
 
-    public void submitDepartmentAttendanceToHr(
-            List<Employee> employees,
-            List<Intern> interns)
+    public int submitDepartmentAttendanceToHr(User manager, String date)
             throws ExecutionException, InterruptedException {
-
-        List<Attendance> attendances = getAttendancesForDepartment(employees, interns);
-
-        for (Attendance attendance : attendances) {
-            if (!"REVIEWED".equalsIgnoreCase(attendance.getReviewStatus())) {
-                attendance.setReviewStatus("SUBMITTED_TO_HR");
-                updateAttendance(attendance);
-            }
+        if (manager == null || !"MANAGER".equals(normalizeRole(manager.getRole())) || !hasText(manager.getDepartment())) {
+            throw new IllegalArgumentException("A Manager with an assigned department is required");
         }
+        LocalDate selected = LocalDate.parse(date);
+        if (selected.isAfter(LocalDate.now(clock))) throw new IllegalArgumentException("A future date cannot be submitted");
+        return attendanceRepository.submitDepartment(manager.getDepartment(), date, manager.getUsername(), now());
+    }
+
+    public void submitPhoto(String id, User user, Employee employee, Intern intern, byte[] image)
+            throws ExecutionException, InterruptedException {
+        Attendance record = getAttendanceById(id);
+        if (record == null || !isAttendanceForUser(record, user, employee, intern)) {
+            throw new IllegalArgumentException("This check-in does not belong to you");
+        }
+        attendanceRepository.attachPhoto(id, record.getEmployeeId(), today(), image, now());
+    }
+
+    public byte[] getPhoto(String id) throws ExecutionException, InterruptedException {
+        return attendanceRepository.findPhoto(id);
+    }
+
+    public void correctTimes(String id, String checkIn, String checkOut, String reason, String reviewer)
+            throws ExecutionException, InterruptedException {
+        if (!hasText(reason)) throw new IllegalArgumentException("A correction reason is required");
+        LocalTime arrival = LocalTime.parse(checkIn);
+        if (hasText(checkOut) && LocalTime.parse(checkOut).isBefore(arrival)) {
+            throw new IllegalArgumentException("Check-out must be after check-in");
+        }
+        Attendance row = getAttendanceById(id);
+        if (row == null) throw new IllegalArgumentException("Attendance no longer exists");
+        if (today().equals(row.getDate()) && (arrival.isAfter(LocalTime.now(clock))
+                || hasText(checkOut) && LocalTime.parse(checkOut).isAfter(LocalTime.now(clock)))) {
+            throw new IllegalArgumentException("Attendance time cannot be in the future");
+        }
+        attendanceRepository.correctTimes(id, checkIn, checkOut == null ? "" : checkOut, reason, reviewer, now());
+    }
+
+    public String createManual(Attendance input, Employee employee, Intern intern, String reviewer)
+            throws ExecutionException, InterruptedException {
+        if (employee == null && intern == null) throw new IllegalArgumentException("Choose a staff member");
+        LocalDate date = LocalDate.parse(input.getDate());
+        if (date.isAfter(LocalDate.now(clock))) throw new IllegalArgumentException("Future check-ins are not allowed");
+        LocalTime time = LocalTime.parse(input.getCheckIn());
+        if (date.equals(LocalDate.now(clock)) && time.isAfter(LocalTime.now(clock))) {
+            throw new IllegalArgumentException("Check-in time cannot be in the future");
+        }
+        if (!hasText(input.getCorrectionReason())) throw new IllegalArgumentException("A reason is required for manual check-in");
+        if (hasText(input.getCheckOut()) && LocalTime.parse(input.getCheckOut()).isBefore(time)) {
+            throw new IllegalArgumentException("Check-out must be after check-in");
+        }
+        if (date.equals(LocalDate.now(clock)) && hasText(input.getCheckOut())
+                && LocalTime.parse(input.getCheckOut()).isAfter(LocalTime.now(clock))) {
+            throw new IllegalArgumentException("Check-out time cannot be in the future");
+        }
+        User owner = new User();
+        owner.setRole(employee != null ? employee.getRole() : "INTERN");
+        assignAttendanceOwner(input, owner, employee, intern);
+        if (findAttendanceForDate(owner, employee, intern, input.getDate()) != null) {
+            throw new IllegalArgumentException("A check-in already exists for this person and date");
+        }
+        input.setStatus("PRESENT");
+        input.setSubmittedByRole(normalizeRole(owner.getRole()));
+        input.setReviewStatus("SUBMITTED_TO_HR");
+        input.setManualEntry(true);
+        input.setPhotoSubmitted(false);
+        input.setCorrectedBy(reviewer);
+        input.setCorrectedAt(now());
+        return createAttendance(input);
     }
 
     public List<Attendance> getAttendancesForUser(
@@ -272,7 +363,7 @@ public class AttendanceService {
             addDepartment(departments, intern.getDepartment());
         });
 
-        return matchesDepartment(attendance, departments) || matchesIdentity(attendance, ids, names);
+        return matchesDepartment(attendance, departments);
     }
 
     // =========================
@@ -379,8 +470,7 @@ public class AttendanceService {
         String employeeId = attendance.getEmployeeId();
         String employeeName = attendance.getEmployeeName();
 
-        return employeeId != null && ids.contains(employeeId.trim())
-                || employeeName != null && names.contains(employeeName.trim().toLowerCase());
+        return employeeId != null && ids.contains(employeeId.trim());
     }
 
     private boolean matchesDepartment(Attendance attendance, Set<String> departments) {

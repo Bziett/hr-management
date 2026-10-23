@@ -30,7 +30,7 @@
             <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
             <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
             <div class="form-field"><label>Username</label><input class="form-control" th:field="*{username}" required></div>
-            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="password" th:field="*{password}" minlength="8" required></div>
+            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="text" th:field="*{password}" autocomplete="new-password" minlength="8" spellcheck="false" required></div>
             <div class="form-field">
                 <label>Role</label>
                 <select class="form-select" th:field="*{role}" data-role-select required>

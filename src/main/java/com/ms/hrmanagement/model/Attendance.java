@@ -13,6 +13,31 @@ public class Attendance {
     private String submittedByRole;
     private String reviewStatus;
     private String note;
+    private boolean photoSubmitted;
+    private String photoSubmittedAt;
+    private String summarySubmittedBy;
+    private String summarySubmittedAt;
+    private boolean manualEntry;
+    private String correctedBy;
+    private String correctedAt;
+    private String correctionReason;
+
+    public boolean isPhotoSubmitted() { return photoSubmitted; }
+    public void setPhotoSubmitted(boolean value) { photoSubmitted = value; }
+    public String getPhotoSubmittedAt() { return photoSubmittedAt; }
+    public void setPhotoSubmittedAt(String value) { photoSubmittedAt = value; }
+    public String getSummarySubmittedBy() { return summarySubmittedBy; }
+    public void setSummarySubmittedBy(String value) { summarySubmittedBy = value; }
+    public String getSummarySubmittedAt() { return summarySubmittedAt; }
+    public void setSummarySubmittedAt(String value) { summarySubmittedAt = value; }
+    public boolean isManualEntry() { return manualEntry; }
+    public void setManualEntry(boolean value) { manualEntry = value; }
+    public String getCorrectedBy() { return correctedBy; }
+    public void setCorrectedBy(String value) { correctedBy = value; }
+    public String getCorrectedAt() { return correctedAt; }
+    public void setCorrectedAt(String value) { correctedAt = value; }
+    public String getCorrectionReason() { return correctionReason; }
+    public void setCorrectionReason(String value) { correctionReason = value; }
 
     // Empty constructor required by Firebase Firestore
     public Attendance() {

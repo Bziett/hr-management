@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Repository
@@ -78,11 +79,45 @@ public class LeaveRequestRepository {
 
         requireText(leaveRequest.getId(), "Leave request ID is required");
 
-        firestore
-                .collection(COLLECTION)
-                .document(leaveRequest.getId())
-                .set(leaveRequest)
-                .get();
+        updatePending(leaveRequest.getId(), Map.of(
+                "leaveType", leaveRequest.getLeaveType(),
+                "startDate", leaveRequest.getStartDate(),
+                "endDate", leaveRequest.getEndDate(),
+                "reason", leaveRequest.getReason()));
+    }
+
+    public void review(String id, String status, String reviewer)
+            throws ExecutionException, InterruptedException {
+        updatePending(id, Map.of("status", status, "approvedBy", reviewer));
+    }
+
+    private void updatePending(String id, Map<String, Object> changes)
+            throws ExecutionException, InterruptedException {
+        requireText(id, "Leave request ID is required");
+        DocumentReference document = firestore.collection(COLLECTION).document(id);
+        try {
+            // Read and write atomically so two reviewers cannot overwrite a decision.
+            firestore.runTransaction(transaction -> {
+                DocumentSnapshot snapshot = transaction.get(document).get();
+                if (!snapshot.exists()) {
+                    throw new IllegalStateException("Leave request no longer exists");
+                }
+                if (!"PENDING".equals(snapshot.getString("status"))) {
+                    throw new IllegalStateException("This leave request has already been processed");
+                }
+                transaction.update(document, changes);
+                return null;
+            }).get();
+        } catch (ExecutionException exception) {
+            Throwable cause = exception;
+            while (cause.getCause() != null && cause != cause.getCause()) {
+                cause = cause.getCause();
+            }
+            if (cause instanceof IllegalStateException stateException) {
+                throw stateException;
+            }
+            throw exception;
+        }
     }
 
     // Delete request

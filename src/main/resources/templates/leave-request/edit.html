@@ -8,14 +8,14 @@
         <header class="topbar"><div class="page-title"><h1>Update Leave Request</h1><span class="muted" th:text="${leaveRequest.employeeName}">Employee</span></div><a class="btn btn-secondary" th:href="@{/leave-requests}">Back</a></header>
         <form class="card form-grid" th:action="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}" th:object="${leaveRequest}" method="post">
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <div class="form-field"><label>Employee ID</label><input class="form-control" th:field="*{employeeId}"></div>
-            <div class="form-field"><label>Employee Name</label><input class="form-control" th:field="*{employeeName}" required></div>
+            <div class="form-field"><label>Employee ID</label><input class="form-control" th:field="*{employeeId}" readonly></div>
+            <div class="form-field"><label>Employee Name</label><input class="form-control" th:field="*{employeeName}" readonly></div>
             <div class="form-field"><label>Leave Type</label><select class="form-select" th:field="*{leaveType}"><option value="ANNUAL">Annual Leave</option><option value="SICK">Sick Leave</option><option value="UNPAID">Unpaid Leave</option><option value="OTHER">Other</option></select></div>
-            <div class="form-field"><label>Status</label><select class="form-select" th:field="*{status}"><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></div>
+            <div class="form-field"><label>Status</label><input class="form-control" th:field="*{status}" readonly></div>
             <div class="form-field"><label>Start Date</label><input class="form-control" type="date" th:field="*{startDate}" required></div>
             <div class="form-field"><label>End Date</label><input class="form-control" type="date" th:field="*{endDate}" required></div>
-            <div class="form-field"><label>Approver</label><input class="form-control" th:field="*{approvedBy}"></div>
-            <div class="form-field"><label>Created Date</label><input class="form-control" type="date" th:field="*{createdAt}"></div>
+            <div class="form-field"><label>Reviewed By</label><input class="form-control" th:field="*{approvedBy}" readonly></div>
+            <div class="form-field"><label>Created Date</label><input class="form-control" type="date" th:field="*{createdAt}" readonly></div>
             <div class="form-field full"><label>Reason</label><textarea th:field="*{reason}"></textarea></div>
             <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Update</button><a class="btn btn-secondary" th:href="@{/leave-requests/{id}(id=${leaveRequest.id})}">Cancel</a></div>
         </form>

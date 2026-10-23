@@ -89,7 +89,7 @@ public class DashboardController {
 
         var employees = employeeService.getAllEmployees();
         var interns = internService.getAllInterns();
-        var attendances = attendanceService.getAllAttendances();
+        var attendances = attendanceService.getAttendancesForHr();
         var leaveRequests = leaveRequestService.getAllLeaveRequests();
 
         addSummary(model, employees, interns, attendances, leaveRequests);

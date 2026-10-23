@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Missing Check-in</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body><div class="app-shell"><aside th:replace="~{fragments/sidebar :: sidebar('attendance')}"></aside><main class="main">
+<header class="topbar"><div class="page-title"><h1>Add Missing Check-in</h1></div><a class="btn btn-secondary" th:href="@{/attendance}">Back</a></header>
+<div class="alert alert-error" th:if="${attendanceError}" th:text="${attendanceError}"></div>
+<form class="card form-grid" th:action="@{/attendance/supplement}" method="post"><input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+<div class="form-field"><label for="personType">Staff Type</label><select id="personType" name="personType" class="form-select"><option value="EMPLOYEE">Employee / Manager</option><option value="INTERN">Intern</option></select></div>
+<div class="form-field"><label for="personId">Staff Member</label><select id="personId" name="personId" class="form-select" required><option value="">Select Staff Member</option>
+<option th:each="person : ${employees}" data-person-type="EMPLOYEE" th:value="${person.id}" th:text="${person.fullName + ' - ' + person.department + ' (' + person.role + ')'}"></option>
+<option th:each="person : ${interns}" data-person-type="INTERN" th:value="${person.id}" th:text="${person.fullName + ' - ' + person.department + ' (INTERN)'}"></option></select></div>
+<div class="form-field"><label for="date">Date</label><input id="date" name="date" type="date" class="form-control" th:value="${today}" th:max="${today}" required></div>
+<div class="form-field"><label for="checkIn">Check In</label><input id="checkIn" name="checkIn" type="time" step="1" class="form-control" required></div>
+<div class="form-field"><label for="checkOut">Check Out (Optional)</label><input id="checkOut" name="checkOut" type="time" step="1" class="form-control"></div>
+<div class="form-field full"><label for="correctionReason">Reason</label><textarea id="correctionReason" name="correctionReason" required maxlength="1000"></textarea></div>
+<div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Save Missing Check-in</button><a class="btn btn-secondary" th:href="@{/attendance}">Cancel</a></div></form>
+</main></div><script th:src="@{/js/attendance.js}"></script></body></html>

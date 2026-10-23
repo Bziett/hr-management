@@ -6,11 +6,13 @@
     <aside th:replace="~{fragments/sidebar :: sidebar('leave')}"></aside>
     <main class="main">
         <header class="topbar"><div class="page-title"><h1>Leave Requests</h1><span class="muted">Review submitted leave requests and approval status</span></div><a class="btn btn-primary" th:if="${canCreateLeaveRequest}" th:href="@{/leave-requests/add}">Create Request</a></header>
+        <p class="alert alert-success" role="status" th:if="${successMessage}" th:text="${successMessage}"></p>
+        <p class="alert alert-error" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></p>
         <section class="card">
             <div class="toolbar"><input class="search-input" data-table-search="#leaveTable" placeholder="Search by employee, leave type, status"></div>
             <div class="table-wrap">
                 <table id="leaveTable">
-                    <thead><tr><th>Employee</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Approver</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Employee</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Reviewed By</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                     <tr th:each="leaveRequest : ${leaveRequests}">
                         <td th:text="${leaveRequest.employeeName}">Alex Morgan</td>
@@ -22,7 +24,12 @@
                         <td>
                             <div class="actions">
                                 <a class="btn btn-ghost" th:href="@{/leave-requests/{id}(id=${leaveRequest.id})}">View</a>
-                                <a class="btn btn-secondary" th:if="${#lists.contains(manageableLeaveRequestIds, leaveRequest.id)}" th:href="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}">Edit</a>
+                                <form class="inline-form" th:if="${canReviewLeaveRequests and leaveRequest.status == 'PENDING'}" th:action="@{/leave-requests/review/{id}(id=${leaveRequest.id})}" method="post">
+                                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button class="btn btn-primary" type="submit" name="decision" value="APPROVED" onclick="return confirm('Approve this leave request?')">Approve</button>
+                                    <button class="btn btn-danger" type="submit" name="decision" value="REJECTED" onclick="return confirm('Reject this leave request?')">Reject</button>
+                                </form>
+                                <a class="btn btn-secondary" th:if="${leaveRequest.status == 'PENDING' and #lists.contains(manageableLeaveRequestIds, leaveRequest.id)}" th:href="@{/leave-requests/edit/{id}(id=${leaveRequest.id})}">Edit</a>
                                 <form class="inline-form" th:if="${#lists.contains(manageableLeaveRequestIds, leaveRequest.id)}" th:action="@{/leave-requests/delete/{id}(id=${leaveRequest.id})}" method="post" onsubmit="return confirm('Delete this leave request?')">
                                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button class="btn btn-danger" type="submit">Delete</button>

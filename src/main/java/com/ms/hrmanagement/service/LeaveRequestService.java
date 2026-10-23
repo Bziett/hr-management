@@ -176,6 +176,17 @@ public class LeaveRequestService {
         leaveRequestRepository.update(leaveRequest);
     }
 
+    public void reviewLeaveRequest(String id, String decision, String reviewer)
+            throws ExecutionException, InterruptedException {
+        if (!"APPROVED".equals(decision) && !"REJECTED".equals(decision)) {
+            throw new IllegalArgumentException("Choose Approve or Reject");
+        }
+        if (reviewer == null || reviewer.isBlank()) {
+            throw new IllegalArgumentException("An authenticated reviewer is required");
+        }
+        leaveRequestRepository.review(id, decision, reviewer);
+    }
+
     // =========================
     // DELETE
     // =========================

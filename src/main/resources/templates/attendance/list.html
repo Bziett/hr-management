@@ -8,12 +8,9 @@
         <header class="topbar">
             <div class="page-title"><h1>Attendance Records</h1><span class="muted">Track workdays and work status by department</span></div>
             <div class="actions">
-                <form class="inline-form" th:if="${currentRole == 'MANAGER'}" th:action="@{/attendance/submit-department}" method="post">
-                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button class="btn btn-secondary" type="submit">Submit Department Summary</button>
-                </form>
-                <a class="btn btn-primary" th:if="${canCreateAttendance}" th:href="@{/attendance/add}">Check In</a>
-                <form class="inline-form" th:if="${canCreateAttendance}" th:action="@{/attendance/check-out}" method="post">
+                <a class="btn btn-secondary" th:if="${canManageAttendance}" th:href="@{/attendance/supplement}">Add Missing Check-in</a>
+                <a class="btn btn-primary" th:if="${canCreateAttendance and selectedView != 'missing-check-out'}" th:href="@{/attendance/add}">Check In</a>
+                <form class="inline-form" th:if="${canCreateAttendance and selectedView != 'missing-check-out'}" th:action="@{/attendance/check-out}" method="post">
                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <button class="btn btn-secondary" type="submit">Check Out</button>
                 </form>
@@ -24,9 +21,14 @@
         <div class="alert alert-success" th:if="${attendanceSuccess}" th:text="${attendanceSuccess}"></div>
         <div class="alert alert-error" th:if="${attendanceError}" th:text="${attendanceError}"></div>
         <section class="card">
+            <nav class="actions" aria-label="Attendance views">
+                <a class="btn btn-secondary" th:href="@{/attendance(department=${selectedDepartment})}" th:attr="aria-current=${selectedView == 'all' ? 'page' : null}">Daily Attendance</a>
+                <a class="btn btn-secondary" th:href="@{/attendance(view='missing-check-out',department=${selectedDepartment})}" th:attr="aria-current=${selectedView == 'missing-check-out' ? 'page' : null}">Missing Check-out</a>
+            </nav>
             <div class="toolbar">
                 <input class="search-input" data-table-search="#attendanceTable" placeholder="Search by employee, department, date, status">
                 <form class="actions" th:if="${currentRole == 'ADMIN' or currentRole == 'HR'}" th:action="@{/attendance}" method="get">
+                    <input type="hidden" name="view" th:value="${selectedView}">
                     <select class="form-select" name="department">
                         <option value="">All Departments</option>
                         <option th:each="department : ${departments}" th:value="${department}" th:text="${department}" th:selected="${department == selectedDepartment}">Engineering</option>
@@ -34,24 +36,36 @@
                     <input class="form-control" type="date" name="date" th:value="${selectedDate}">
                     <button class="btn btn-secondary" type="submit">Filter</button>
                 </form>
-                <form class="actions" th:if="${currentRole == 'MANAGER'}" th:action="@{/attendance}" method="get">
+                <form class="actions" th:if="${currentRole != 'ADMIN' and currentRole != 'HR'}" th:action="@{/attendance}" method="get">
+                    <input type="hidden" name="view" th:value="${selectedView}">
                     <input class="form-control" type="date" name="date" th:value="${selectedDate}">
                     <button class="btn btn-secondary" type="submit">Filter</button>
                 </form>
             </div>
+            <div class="toolbar" th:if="${currentRole == 'MANAGER' and selectedView != 'missing-check-out'}">
+                <div><strong th:text="${selectedDepartment + ' / ' + selectedDate}"></strong>
+                    <p th:text="${'Check-ins: ' + #lists.size(attendances) + ' / Not checked in: ' + #lists.size(missingCheckIns)}"></p>
+                    <p th:if="${not #lists.isEmpty(missingCheckIns)}" th:text="${#strings.listJoin(missingCheckIns, ', ')}"></p>
+                </div>
+                <form class="inline-form" th:action="@{/attendance/submit-department}" method="post" onsubmit="return confirm('Confirm the photos and department roster for this date have been reviewed?')">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="date" th:value="${selectedDate}">
+                    <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(attendances)}">Confirm and Submit to HR</button>
+                </form>
+            </div>
             <div class="table-wrap">
                 <table id="attendanceTable">
-                    <thead><tr><th>Employee</th><th>Department</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Status</th><th>Review</th><th>Notes</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Employee</th><th>Department</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Status</th><th>Review</th><th>Evidence</th><th>Actions</th></tr></thead>
                     <tbody>
                     <tr th:each="attendance : ${attendances}">
                         <td th:text="${attendance.employeeName}">Alex Morgan</td>
                         <td th:text="${attendance.department}">Engineering</td>
                         <td th:text="${attendance.date}">2026-08-12</td>
                         <td th:text="${attendance.checkIn}">08:00</td>
-                        <td th:text="${attendance.checkOut}">17:30</td>
+                        <td><span class="badge" th:if="${missingCheckOutIds != null and #lists.contains(missingCheckOutIds, attendance.id)}">Missing Check-out</span><span th:unless="${missingCheckOutIds != null and #lists.contains(missingCheckOutIds, attendance.id)}" th:text="${attendance.checkOut}">17:30</span></td>
                         <td><span class="badge" th:text="${attendance.status}">PRESENT</span></td>
                         <td th:text="${attendance.reviewStatus}">SUBMITTED_TO_MANAGER</td>
-                        <td th:text="${attendance.note}">On time</td>
+                        <td><a th:if="${attendance.photoSubmitted}" th:href="@{/attendance/{id}(id=${attendance.id})}">View Photo</a><span th:unless="${attendance.photoSubmitted}" th:text="${attendance.manualEntry ? 'Manual entry' : (attendance.reviewStatus == 'AWAITING_PHOTO' ? 'Awaiting photo' : 'No photo recorded')}"></span></td>
                         <td>
                             <div class="actions">
                                 <a class="btn btn-ghost" th:href="@{/attendance/{id}(id=${attendance.id})}">View</a>
@@ -63,7 +77,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(attendances)}"><td colspan="9" class="empty-state">No attendance records found</td></tr>
+                    <tr th:if="${#lists.isEmpty(attendances)}"><td colspan="9" class="empty-state" th:text="${selectedView == 'missing-check-out' ? 'No missing check-outs found' : 'No attendance records found'}">No attendance records found</td></tr>
                     </tbody>
                 </table>
             </div>

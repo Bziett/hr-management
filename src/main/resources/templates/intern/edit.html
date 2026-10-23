@@ -18,18 +18,20 @@
             <div class="form-field">
                 <label>Department</label>
                 <input type="hidden" th:if="${currentRole == 'MANAGER'}" th:field="*{department}">
-                <select class="form-select" th:field="*{department}" th:disabled="${currentRole == 'MANAGER'}" required>
+                <select class="form-select" th:field="*{department}" data-intern-department th:disabled="${currentRole == 'MANAGER'}" required>
                     <option value="">Select Department</option>
                     <option th:each="department : ${departments}" th:value="${department}" th:text="${department}">Engineering</option>
                 </select>
             </div>
             <div class="form-field">
                 <label>Mentor</label>
-                <select class="form-select" th:field="*{mentor}">
+                <select class="form-select" th:field="*{mentor}" data-mentor-select>
                     <option value="">Select Senior Mentor</option>
-                    <option th:if="${intern.mentor != null and intern.mentor != ''}" th:value="${intern.mentor}" th:text="${intern.mentor}">Current Mentor</option>
-                    <option th:each="mentor : ${mentorOptions}" th:value="${mentor.fullName}" th:text="${mentor.fullName}">Senior Mentor</option>
+                    <option th:each="mentor : ${mentorOptions}" th:if="${#strings.equalsIgnoreCase(mentor.department, intern.department)}" th:value="${mentor.fullName}" th:text="${mentor.fullName}">Senior Mentor</option>
                 </select>
+                <template data-mentor-options>
+                    <option th:each="mentor : ${mentorOptions}" th:value="${mentor.fullName}" th:text="${mentor.fullName}" th:attr="data-department=${mentor.department}">Senior Mentor</option>
+                </template>
             </div>
             <div class="form-field"><label>Start Date</label><input class="form-control" type="date" th:field="*{startDate}"></div>
             <div class="form-field"><label>End Date</label><input class="form-control" type="date" th:field="*{endDate}"></div>
@@ -38,6 +40,7 @@
         </form>
     </main>
 </div>
+<script th:src="@{/js/app.js}"></script>
 </body>
 </html>
 

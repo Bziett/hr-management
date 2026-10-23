@@ -15,13 +15,16 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final InternRepository internRepository;
+    private final StaffAccountService staffAccountService;
 
     public EmployeeService(
             EmployeeRepository employeeRepository,
-            InternRepository internRepository) {
+            InternRepository internRepository,
+            StaffAccountService staffAccountService) {
 
         this.employeeRepository = employeeRepository;
         this.internRepository = internRepository;
+        this.staffAccountService = staffAccountService;
     }
 
     // =========================
@@ -118,7 +121,7 @@ public class EmployeeService {
             throws ExecutionException, InterruptedException {
 
         validateAndNormalize(employee, employee.getId());
-        employeeRepository.update(employee);
+        staffAccountService.update(employee);
     }
 
     // =========================
@@ -198,7 +201,7 @@ public class EmployeeService {
         }
 
         if ("MANAGER".equals(role)) {
-            return "Manager";
+            return "";
         }
 
         if (!hasText(position)) {

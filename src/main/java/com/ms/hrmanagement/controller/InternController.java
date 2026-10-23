@@ -238,13 +238,12 @@ public class InternController {
         if (hasRole(authentication, "ROLE_MANAGER")) {
             User currentUser = authService.getAuthenticatedUser(authentication);
             department = departmentOf(currentUser);
+            return hasText(department)
+                    ? employeeService.getSeniorEmployeesByDepartment(department)
+                    : java.util.List.of();
         }
 
-        if (!hasText(department)) {
-            return java.util.List.of();
-        }
-
-        return employeeService.getSeniorEmployeesByDepartment(department);
+        return employeeService.getSeniorEmployeesByDepartment("");
     }
 
     private String departmentOf(User user) {

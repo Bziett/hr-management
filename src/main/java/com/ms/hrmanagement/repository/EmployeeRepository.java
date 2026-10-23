@@ -26,7 +26,7 @@ public class EmployeeRepository {
 
         DocumentReference document = firestore
                 .collection(COLLECTION)
-                .document();
+                .document(RoleIds.newId(employee.getRole()));
 
         employee.setId(document.getId());
 

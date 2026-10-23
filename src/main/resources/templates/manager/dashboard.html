@@ -59,20 +59,21 @@
             </a>
             <a class="card action-card" th:href="@{/attendance/add}">
                 <span class="action-title">Check In</span>
-                <span class="muted">Submit your arrival time to HR for today's attendance.</span>
+                <span class="muted">Record today's arrival and check-in photo.</span>
             </a>
             <form class="card action-card" th:action="@{/attendance/check-out}" method="post">
                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <span class="action-title">Check Out</span>
-                <span class="muted">Record your leaving time against today's check-in.</span>
-                <button class="btn btn-primary" type="submit">Check Out</button>
+                <button class="action-card-submit" type="submit">
+                    <span class="action-title">Check Out</span>
+                    <span class="muted">Record your leaving time against today's check-in.</span>
+                </button>
             </form>
-            <form class="card action-card" th:action="@{/attendance/submit-department}" method="post">
-                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <span class="action-title">Submit Attendance Summary</span>
-                <span class="muted">Send your department attendance list to HR for review.</span>
-                <button class="btn btn-primary" type="submit">Submit Summary</button>
-            </form>
+            <a class="card action-card" th:href="@{/attendance}">
+                <div>
+                    <span class="action-title">Submit Attendance Summary</span>
+                    <span class="muted">Review department check-ins for the selected date.</span>
+                </div>
+            </a>
             <a class="card action-card" th:href="@{/leave-requests}">
                 <span class="action-title">Leave</span>
                 <span class="muted">Process leave requests for your department.</span>

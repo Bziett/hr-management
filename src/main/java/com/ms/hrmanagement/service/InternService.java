@@ -31,6 +31,7 @@ public class InternService {
     public String createIntern(Intern intern)
             throws ExecutionException, InterruptedException {
 
+        intern.setInternCode(null);
         validateIntern(intern, null);
         return internRepository.save(intern);
     }

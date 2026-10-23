@@ -101,26 +101,10 @@ public class EmployeeController {
             account.setDepartment(employee.getDepartment());
             account.setPosition(employee.getPosition());
             account.setStatus(employee.getStatus());
+            account.setPhone(employee.getPhone());
+            account.setHireDate(employee.getHireDate());
 
-            String accountId = authService.createManagerOrEmployeeAccount(account);
-            User createdAccount = authService.getUserById(accountId);
-            Employee createdProfile = employeeService.getEmployeeByUser(createdAccount);
-
-            if (createdProfile != null) {
-                if (hasText(employee.getPhone())) {
-                    createdProfile.setPhone(employee.getPhone());
-                }
-
-                if (hasText(employee.getHireDate())) {
-                    createdProfile.setHireDate(employee.getHireDate());
-                }
-
-                if (hasText(employee.getStatus())) {
-                    createdProfile.setStatus(employee.getStatus());
-                }
-
-                employeeService.updateEmployee(createdProfile);
-            }
+            authService.createManagerOrEmployeeAccount(account);
 
         } catch (Exception e) {
             model.addAttribute("employee", employee);
@@ -214,7 +198,6 @@ public class EmployeeController {
 
         try {
             employeeService.updateEmployee(employee);
-            authService.syncAccountFromEmployeeProfile(employee, existingEmployee.getEmail());
 
         } catch (IllegalArgumentException e) {
             model.addAttribute("employee", employee);

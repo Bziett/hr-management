@@ -8,6 +8,8 @@ public class User {
     private String password;
     private String fullName;
     private String email;
+    private String phone;
+    private String hireDate;
     private String role;
     private String department;
     private String position;
@@ -85,6 +87,22 @@ public class User {
 
     public String getRole() {
         return role;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getHireDate() {
+        return hireDate;
+    }
+
+    public void setHireDate(String hireDate) {
+        this.hireDate = hireDate;
     }
 
     public void setRole(String role) {

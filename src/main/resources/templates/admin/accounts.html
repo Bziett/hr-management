@@ -27,11 +27,12 @@
 
         <form class="card form-grid" th:action="@{/admin/accounts/hr}" th:object="${user}" method="post">
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <div class="form-field full"><label>HR Code</label><input class="form-control" value="Auto-generated after saving" readonly></div>
             <div class="form-field"><label>Full Name</label><input class="form-control" th:field="*{fullName}" required></div>
             <div class="form-field"><label>Email</label><input class="form-control" type="email" th:field="*{email}" required></div>
+            <div class="form-field"><label>Phone</label><input class="form-control" type="tel" th:field="*{phone}"></div>
+            <div class="form-field"><label>Hire Date</label><input class="form-control" type="date" th:field="*{hireDate}"></div>
             <div class="form-field"><label>Username</label><input class="form-control" th:field="*{username}" required></div>
-            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="password" th:field="*{password}" minlength="8" required></div>
+            <div class="form-field"><label>Temporary Password</label><input class="form-control" type="text" th:field="*{password}" autocomplete="new-password" minlength="8" spellcheck="false" required></div>
             <div class="form-field full page-actions"><button class="btn btn-primary" type="submit">Create HR Account</button></div>
         </form>
 

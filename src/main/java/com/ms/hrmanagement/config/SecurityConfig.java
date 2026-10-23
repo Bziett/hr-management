@@ -48,13 +48,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/interns", "/interns/**").hasAnyRole("ADMIN", "HR", "MANAGER")
 
                 .requestMatchers(HttpMethod.GET, "/attendance/add").hasAnyRole("MANAGER", "EMPLOYEE", "INTERN")
+                .requestMatchers("/attendance/supplement").hasAnyRole("ADMIN", "HR")
+                .requestMatchers(HttpMethod.POST, "/attendance/*/photo").hasAnyRole("MANAGER", "EMPLOYEE", "INTERN")
                 .requestMatchers(HttpMethod.POST, "/attendance/add").hasAnyRole("MANAGER", "EMPLOYEE", "INTERN")
                 .requestMatchers(HttpMethod.POST, "/attendance/check-out").hasAnyRole("MANAGER", "EMPLOYEE", "INTERN")
                 .requestMatchers(HttpMethod.POST, "/attendance/submit-department").hasRole("MANAGER")
-                .requestMatchers(HttpMethod.GET, "/attendance/edit/**").hasAnyRole("ADMIN", "HR", "MANAGER")
-                .requestMatchers(HttpMethod.POST, "/attendance/edit/**", "/attendance/delete/**").hasAnyRole("ADMIN", "HR", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/attendance/edit/**").hasAnyRole("ADMIN", "HR")
+                .requestMatchers(HttpMethod.POST, "/attendance/edit/**", "/attendance/delete/**").hasAnyRole("ADMIN", "HR")
                 .requestMatchers(HttpMethod.GET, "/attendance", "/attendance/**").hasAnyRole("ADMIN", "HR", "MANAGER", "EMPLOYEE", "INTERN")
 
+                .requestMatchers(HttpMethod.POST, "/leave-requests/review/**").hasAnyRole("ADMIN", "HR")
                 .requestMatchers(HttpMethod.POST, "/leave-requests/edit/**", "/leave-requests/delete/**").hasAnyRole("ADMIN", "HR", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/leave-requests/edit/**").hasAnyRole("ADMIN", "HR", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/leave-requests/add").hasAnyRole("MANAGER", "EMPLOYEE", "INTERN")
